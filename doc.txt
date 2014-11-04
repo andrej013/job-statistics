@@ -1,0 +1,2 @@
+This is a python project that uses mechanize to search for jobs on indeed.com and download them to elasticsearch 
+where we can use aggregations to provide valuable sattistical data about various jobs.
