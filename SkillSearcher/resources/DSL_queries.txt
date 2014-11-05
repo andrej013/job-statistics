@@ -56,6 +56,10 @@ PUT /skill-analyzer
                     "type" : "string",
                     "index" : "not_analyzed" 
                 },
+                "regional_center" : {
+                    "type" : "string",
+                    "index" : "not_analyzed" 
+                },
                 "state" : {
                     "type" : "string",
                     "index" : "not_analyzed" 

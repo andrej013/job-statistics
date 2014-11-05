@@ -16,7 +16,7 @@ def text_exists(url):
     #check if job ad with the url already exists
 
     #ad_dates_list[i], ad_website, job_title, company_city_state_list, text
-def save_ads(url_text_map):  # url_text_map[link.url] = [ad_dates_list[i], ad_website, text]
+def save_ads(url_text_map, regional_center):  # url_text_map[link.url] = [ad_dates_list[i], ad_website, text]
     for url in url_text_map:
         date_website_text_list = url_text_map.get(url)
         conn.index({"date":date_website_text_list[0],
@@ -25,6 +25,7 @@ def save_ads(url_text_map):  # url_text_map[link.url] = [ad_dates_list[i], ad_we
                     "company": date_website_text_list[3][0],
                     "city": date_website_text_list[3][1],
                     "state": date_website_text_list[3][2],
+                    "regional_center": regional_center,
                     "ad_text": date_website_text_list[4],
                     "indeed_url": url}, "skill-analyzer", "indeed-jobs", url)
     print 'saved to ES'
@@ -168,13 +169,14 @@ def download_jobs(job_name, location):
     br.form[ 'l' ] = location
     page = br.submit()
     
+    regional_center = location.split(',')[0] #aka city
     page_number = 1
     settings = [br, page_number]
     while True:  # for i in range(1,20):
         dates = get_dates(page)
         company_city_state_list = get_company_city_state_list(page)
         settings = find_ads(conn, dates, settings[0], settings[1], company_city_state_list)
-        save_ads(settings[2])
+        save_ads(settings[2], regional_center)
         page = settings[3]
         print str(settings[1])
         if(settings[3] == 'end_of_search'):
