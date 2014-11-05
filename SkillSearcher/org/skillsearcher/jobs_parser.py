@@ -9,35 +9,11 @@ from datetime import datetime, timedelta
 from random import randint
 
 
-
-# date, company, ad title, place(city, state), ad
+#TODO: save the name of the city from the search-bar, as regional center
     
 def text_exists(url):
     return False
-#     try:
-#         cnx = mysql.connector.connect(user='root', password='13243546',
-#                                       host='127.0.0.1',
-#                                       database='job_analytics')
-#         cursor = cnx.cursor()            
-#         query = ("SELECT ad FROM ads where url = %s")
-#         cursor.execute(query, (url,))
-#         for (text) in cursor:
-#             print(str(text))
-#             cursor.close()
-#             cnx.close()
-#             return str(text)
-#         cursor.close()
-#     except mysql.connector.Error as err:
-#         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-#             print("Something is wrong with your user name or password")
-#         elif err.errno == errorcode.ER_BAD_DB_ERROR:
-#             print("Database does not exists")
-#         else:
-#             print(err)
-#         return False
-#     else:
-#         cnx.close()
-#         return False
+    #check if job ad with the url already exists
 
     #ad_dates_list[i], ad_website, job_title, company_city_state_list, text
 def save_ads(url_text_map):  # url_text_map[link.url] = [ad_dates_list[i], ad_website, text]
@@ -52,31 +28,6 @@ def save_ads(url_text_map):  # url_text_map[link.url] = [ad_dates_list[i], ad_we
                     "ad_text": date_website_text_list[4],
                     "indeed_url": url}, "skill-analyzer", "indeed-jobs", url)
     print 'saved to ES'
-#     try:
-#         cnx = mysql.connector.connect(user='root', password='13243546',
-#                                       host='127.0.0.1',
-#                                       database='job_analytics')
-#         cursor = cnx.cursor()
-#         for url in url_text_map:
-#             txt = url_text_map.get(url)
-#             ad_data=(url, txt)
-#             insert_ad_query = ("INSERT INTO ads "
-#                "(url, ad) "
-#                "VALUES (%s, %s)")
-#             cursor.execute(insert_ad_query, ad_data)
-#         cnx.commit()
-#         cursor.close()
-#     except mysql.connector.Error as err:
-#         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-#             print("Something is wrong with your user name or password")
-#         elif err.errno == errorcode.ER_BAD_DB_ERROR:
-#             print("Database does not exists")
-#         else:
-#             print(err)
-#         return False
-#     else:
-#         cnx.close()
-#         return False
 
 
 def get_text_from_url(url, number_retried):
@@ -157,7 +108,7 @@ def get_dates(page):
             print string_date
             ad_date = datetime.now().date()
             ad_dates.append(ad_date)
-    if(len(ad_dates)!=13):
+    if(len(ad_dates)!=10):
         print 'examine'
     return ad_dates
 
@@ -211,13 +162,10 @@ def download_jobs(job_name, location):
     br.set_handle_robots(False)
     br.addheaders = [('User-agent', 'Firefox')]
     
-#     start_words = set(get_java_words())
     br.open(indeed)
-    # for form in br.forms():
-    #     print(form)
     br.select_form('jobsearch')
-    br.form[ 'q' ] = job_name   #'java'
-    br.form[ 'l' ] = location   #'NYC'
+    br.form[ 'q' ] = job_name
+    br.form[ 'l' ] = location
     page = br.submit()
     
     page_number = 1
