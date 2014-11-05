@@ -1,0 +1,78 @@
+
+GET /skill-analyzer/indeed-jobs/_search   
+{
+  "query": {
+    "bool": {
+      "must": [
+                  { "match": { "job_title": "java" }},
+                  { "match": { "ad_text": "sql"   }}
+      ]
+    }
+  }
+}
+GET /skill-analyzer/indeed-jobs/_search
+{
+  "query": {
+    "filtered": {
+      "filter": {
+        "term": {
+          "state": "CT"
+        }
+      }
+    }
+  }
+}
+
+
+#GET /_all/_mapping/type/
+GET /_all/_mapping/indeed-jobs/
+
+
+
+PUT /ads-test
+{
+    "mappings" : {
+        "jobs-test" : {
+            "properties" : {
+                "state" : {
+                    "type" : "string",
+                    "index" : "not_analyzed" 
+                }
+            }
+        }
+    }
+}
+
+DELETE /skill-analyzer
+
+GET /skill-analyzer/indeed-jobs/_search
+
+PUT /skill-analyzer
+{
+    "mappings" : {
+        "indeed-jobs" : {
+            "properties" : {
+                "city" : {
+                    "type" : "string",
+                    "index" : "not_analyzed" 
+                },
+                "state" : {
+                    "type" : "string",
+                    "index" : "not_analyzed" 
+                },
+                "indeed_url" : {
+                    "type" : "string",
+                    "index" : "not_analyzed" 
+                },
+                "company" : {
+                    "type" : "string",
+                    "index" : "not_analyzed" 
+                },
+                "website_url" : {
+                    "type" : "string",
+                    "index" : "not_analyzed" 
+                }
+            }
+        }
+    }
+}

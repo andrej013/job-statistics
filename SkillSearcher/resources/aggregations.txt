@@ -1,0 +1,10 @@
+GET /skill-analyzer/indeed-jobs/_search?search_type=count 
+{
+    "aggs" : { 
+        "colors" : { 
+            "terms" : {
+              "field" : "city" 
+            }
+        }
+    }
+}
