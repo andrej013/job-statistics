@@ -7,15 +7,15 @@ from bs4 import BeautifulSoup
 import unicodedata
 from datetime import datetime, timedelta
 from random import randint
+import threading
 
-
-#TODO: save the name of the city from the search-bar, as regional center
+# TODO: save the name of the city from the search-bar, as regional center
     
 def text_exists(url):
     return False
-    #check if job ad with the url already exists
+    # check if job ad with the url already exists
 
-    #ad_dates_list[i], ad_website, job_title, company_city_state_list, text
+    # ad_dates_list[i], ad_website, job_title, company_city_state_list, text
 def save_ads(url_text_map, regional_center):  # url_text_map[link.url] = [ad_dates_list[i], ad_website, text]
     for url in url_text_map:
         date_website_text_list = url_text_map.get(url)
@@ -31,7 +31,7 @@ def save_ads(url_text_map, regional_center):  # url_text_map[link.url] = [ad_dat
     print 'saved to ES'
 
 
-def get_text_from_url(url, number_retried):
+def get_text_from_url(url, number_retried, return_list):
     browser = mechanize.Browser()
     browser.set_handle_robots(False)
     browser.addheaders = [('User-agent', 'Firefox')]
@@ -50,11 +50,12 @@ def get_text_from_url(url, number_retried):
     except Exception as e:  # handle 404 not found
         if number_retried < 1:
             print ('error opening link: ' + url + '\n' + str(e))
-            text, ad_website = get_text_from_url(url, 1)
+            text, ad_website = get_text_from_url(url, 1, return_list)
         else:
             print ('error opening link: ' + url + '\n' + str(e))
             return ["", ""]
-    return [text, ad_website]
+    return_list.append(text)
+    return_list.append(ad_website)
     
 def get_stop_words():
     with open('stop_words.txt') as f:
@@ -77,17 +78,17 @@ def remove_sponsored_links(html):
     clean_html = ""
     for line in html.splitlines():
         if not("Sponsored by" in line):
-            clean_html=clean_html+'\n'+line
+            clean_html = clean_html + '\n' + line
     return clean_html
 
 def get_dates(page):
     html = page.get_data()
-    clean_html= remove_sponsored_links(html)
+    clean_html = remove_sponsored_links(html)
     # parse the html
     soup = BeautifulSoup(clean_html)
     # find a list of all span elements
     spans = soup.find_all('span', {'class' : 'date'})
-    #span_dates = spans[2:]
+    # span_dates = spans[2:]
     ad_dates = []
     for span_date in spans:
         string_date = span_date.get_text()
@@ -109,7 +110,7 @@ def get_dates(page):
             print string_date
             ad_date = datetime.now().date()
             ad_dates.append(ad_date)
-    if(len(ad_dates)!=10):
+    if(len(ad_dates) != 10):
         print 'examine'
     return ad_dates
 
@@ -128,6 +129,7 @@ def get_company_city_state_list(page):
             locations_found = locations_found + 1
             company_city_state_list.append([company, city, state])
     return company_city_state_list
+
 def find_ads(conn, ad_dates_list, br, page_number, company_city_state_list):
     i = 0
     url_text_map = {}
@@ -136,9 +138,20 @@ def find_ads(conn, ad_dates_list, br, page_number, company_city_state_list):
             job_title = link.text
             text = text_exists(link.url)
             if not text:
-                text, ad_website = get_text_from_url(link.url, 0)
+                # text, ad_website = get_text_from_url(link.url, 0)
+                ad=[]
+                t = threading.Thread(target=get_text_from_url, args=(link.url, 0, ad))
+                t.start()
+                
+                number_of_seconds_to_look_for_text = 10
+                t.join(number_of_seconds_to_look_for_text)
+                if(len(ad)==0):
+                    text=""     #text not found, list still empty
+                else:
+                    text, ad_website = ad#"p._target
+                
                 if text != "":  # it is empty if the page cant be opened - we get 404 not found
-                    print link.url+" "+str(len(ad_dates_list))+" "+str(len(company_city_state_list))
+                    print link.url + " " + str(len(ad_dates_list)) + " " + str(len(company_city_state_list))
                     try:
                         url_text_map[link.url] = [ad_dates_list[i], ad_website, job_title, company_city_state_list[i], text]
                     except Exception as e:
@@ -169,7 +182,7 @@ def download_jobs(job_name, location):
     br.form[ 'l' ] = location
     page = br.submit()
     
-    regional_center = location.split(',')[0] #aka city
+    regional_center = location.split(',')[0]  # aka city
     page_number = 1
     settings = [br, page_number]
     while True:  # for i in range(1,20):
