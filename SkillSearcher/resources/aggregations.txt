@@ -8,3 +8,22 @@ GET /skill-analyzer/indeed-jobs/_search?search_type=count
         }
     }
 }
+
+
+GET /skill-analyzer/indeed-jobs/_search?search_type=count
+{
+    "query": {
+    "bool": {
+      "must": [
+                  { "match": { "ad_text": "python"   }}
+      ]
+    }
+  },
+    "aggs" : {
+        "colors" : {
+            "terms" : {
+              "field" : "regional_center"
+            }
+        }
+    }
+}
